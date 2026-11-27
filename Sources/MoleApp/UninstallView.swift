@@ -235,7 +235,12 @@ struct UninstallConfirmSheet: View {
                 .font(.callout).foregroundStyle(permanent ? .red : .secondary)
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel, action: cancel).keyboardShortcut(.cancelAction)
+                // Return and Esc both cancel; deleting needs a click on the red button.
+                Button("Cancel", role: .cancel, action: cancel)
+                    .keyboardShortcut(.defaultAction)
+                Button("Cancel", action: cancel)          // invisible, so Esc cancels too
+                    .keyboardShortcut(.cancelAction)
+                    .opacity(0).frame(width: 0, height: 0).accessibilityHidden(true)
                 Button(permanent ? "Delete Permanently" : "Move to Trash", role: .destructive, action: confirm)
                     .buttonStyle(.borderedProminent).tint(.red)
             }

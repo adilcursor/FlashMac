@@ -18,7 +18,10 @@ struct MoleApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        // Testing launches (--screen …) open in the background so they never take keyboard focus.
+        if !ProcessInfo.processInfo.arguments.contains("--screen") {
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }

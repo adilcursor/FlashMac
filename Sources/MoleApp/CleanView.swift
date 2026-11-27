@@ -255,7 +255,7 @@ struct PreviewRunScreen: View {
                 .buttonStyle(.borderedProminent)
                 .tint(feature == .clean ? .red : feature.tint)
                 .disabled(model.phase != .previewed)
-                .keyboardShortcut(.defaultAction)
+                // No Return shortcut: running a clean must always be a deliberate click.
             }
         }
         .controlSize(.large)
@@ -373,7 +373,12 @@ struct CleanConfirmSheet: View {
             .frame(minHeight: 280)
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel, action: cancel).keyboardShortcut(.cancelAction)
+                // Return and Esc both cancel; deleting needs a click on the red button.
+                Button("Cancel", role: .cancel, action: cancel)
+                    .keyboardShortcut(.defaultAction)
+                Button("Cancel", action: cancel)          // invisible, so Esc cancels too
+                    .keyboardShortcut(.cancelAction)
+                    .opacity(0).frame(width: 0, height: 0).accessibilityHidden(true)
                 Button("Clean \(report.actionCount) Items", role: .destructive, action: confirm)
                     .buttonStyle(.borderedProminent).tint(.red)
             }
