@@ -164,7 +164,6 @@ enum Brand {
 
 struct HomeView: View {
     let open: (Feature) -> Void
-    @LocalState private var version: String?
 
     var body: some View {
         GeometryReader { geo in
@@ -185,7 +184,6 @@ struct HomeView: View {
                 .ignoresSafeArea()
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { footer }
-        .task { version = await Mole.version() }
     }
 
     private var hero: some View {
@@ -224,20 +222,13 @@ struct HomeView: View {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 12) {
-                Group {
-                    if Mole.executable != nil {
-                        Label("Powered by Mole" + (version.map { " \($0)" } ?? "")
-                              + (Mole.usingBundledCopy ? " (built in)" : ""),
-                              systemImage: "checkmark.seal")
-                    } else {
-                        Label("Mole engine not found. Install it with: brew install mole",
-                              systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.red)
-                    }
+                // Only shown if the built-in cleanup engine is somehow missing.
+                if Mole.executable == nil {
+                    Label("Cleanup engine missing. Please reinstall FlashMac.",
+                          systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.red)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .help(Mole.executable ?? "")
                 Spacer()
                 AdminToggle()
             }
