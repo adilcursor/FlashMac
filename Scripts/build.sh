@@ -32,6 +32,7 @@ if [[ -n "$MO_BIN" ]]; then
     [[ -f "$MO_ROOT/LICENSE" ]] && cp "$MO_ROOT/LICENSE" "$DEST/LICENSE"
     # Homebrew hardcodes its Cellar path; make it relative to the bundle.
     sed -i '' 's|^SCRIPT_DIR=.*$|SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../libexec" \&\& pwd)"|' "$DEST/bin/mole"
+    chmod -R u+w "$DEST"                 # Homebrew files are read-only
     chmod +x "$DEST/bin/mole"
     echo "Bundled Mole from $MO_ROOT"
   else
@@ -74,12 +75,15 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 # Ad-hoc signature so macOS will launch it locally.
+# Strip extended attributes first so the zip carries no hidden ._ metadata files
+# (they break the signature when the zip is opened with the command-line unzip tool).
+xattr -cr "$APP"
 codesign --force --deep --sign - "$APP"
 echo "Built $APP"
 
 # Zip for copying to another Mac (keeps permissions and the signature).
 rm -f "$ROOT/build/$NAME.zip"
-ditto -c -k --keepParent "$APP" "$ROOT/build/$NAME.zip"
+ditto -c -k --keepParent --norsrc --noextattr --noqtn --noacl "$APP" "$ROOT/build/$NAME.zip"
 echo "Wrote $ROOT/build/$NAME.zip"
 
 if [[ "${1:-}" != "--no-install" ]]; then
